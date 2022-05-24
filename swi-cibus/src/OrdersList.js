@@ -37,7 +37,7 @@ const OrdersList = () =>  {
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px' }}>
       <CircularProgress />
     </Box>
-  )
+  );
 
   return (
     <List style={style}>
