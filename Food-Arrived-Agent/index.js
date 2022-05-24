@@ -1,3 +1,4 @@
+require('dotenv').config()
 const PORT = 8000;
 const express = require('express');
 const {startCibusAgent} = require("./cibus-agent");
