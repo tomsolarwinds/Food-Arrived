@@ -27,6 +27,10 @@ const OrdersList = () =>  {
       setLoading(false);
     };
     fetch();
+    const intervalId = setInterval(() => {  //assign interval to a variable to clear it.
+      fetch();
+    }, 50000);
+    return () => clearInterval(intervalId);
   }, [api]);
 
   if (loading) return (
