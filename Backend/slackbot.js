@@ -1,10 +1,10 @@
 const { App } = require("@slack/bolt");
 
 const bot = new App({
-    token: "xoxb-3563554157315-3563621120514-GDzDn2MgCuxHcqSmsWAWQ2xd", //Find in the Oauth  & Permissions tab
+    token: "xoxb-3563554157315-3563621120514-hZJtdM3Syuba6FqcOOjkUCoy", //Find in the Oauth  & Permissions tab
     signingSecret: "4e2f8ba0d6210e7d6d0bb21d645a8bbc", // Find in Basic Information Tab
     socketMode:true,
-    appToken: "xapp-1-A03H9AHV264-3561701120213-1e5dd88df5427098aa111e6a08ecc725af92107e0a3f72cc7047eba20ad4d06f" // Token from the App-level Token that we created
+    appToken: "xapp-1-A03H9AHV264-3571280004116-6110e7c3c45ac64e5473510990e48168545884907617302f95c2492c4a7ce8aa" // Token from the App-level Token that we created
 });
 
 bot.command("/square", async ({ command, ack, say }) => {
