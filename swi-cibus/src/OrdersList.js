@@ -27,13 +27,17 @@ const OrdersList = () =>  {
       setLoading(false);
     };
     fetch();
+    const intervalId = setInterval(() => {  //assign interval to a variable to clear it.
+      fetch();
+    }, 50000);
+    return () => clearInterval(intervalId);
   }, [api]);
 
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px' }}>
       <CircularProgress />
     </Box>
-  )
+  );
 
   return (
     <List style={style}>
