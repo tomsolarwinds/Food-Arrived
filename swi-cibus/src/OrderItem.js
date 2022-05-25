@@ -38,11 +38,13 @@ const OrderItem = ({ item, onRemoveOrder }) =>  {
   const handleErrorSnackbarClose = () => setErrorSnackbarOpen(false);
   const handleOrderDelivered = async () => {
     setModalOpen(false);
-    const response = await api.put(`http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/order/${email}`, {});
-    if (response?.status === 200) {
-      onRemoveOrder(email)
-      handleSnackbarOpen();
-    } else {
+    try {
+      const response = await api.put(`http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/order/${email}`, {});
+      if (response?.status === 200) {
+        onRemoveOrder(email)
+        handleSnackbarOpen();
+      }
+    } catch {
       handleErrorSnackbarOpen()
     }
   }
