@@ -15,18 +15,134 @@ const tableName = 'Food-Arrived-Orders'
 
 app.use(bodyParser.json())
 
-app.post('/orders/new', (req,res) => {
+app.use(function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Access-Control-Allow-Methods', '*');
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  next();
+});
+
+const getTime = (arrivalTime) => {
+  const time = arrivalTime.split(':');
+  return new Date(null, null, null,parseInt (time[0] || 0), parseInt(time[1] || 0))
+}
+
+app.post('/orders/new', (req,res, next) => {
+  var newOrders = req.body
+  var params = {
+    TableName: tableName
+  }
+
+client.scan(params, (err, data) => {
+  if (err) {
+    console.log('Error', err)
+    res.send(err)
+  }
+  else {
+    newOrders.forEach(newOrder => {
+      const orderToUpdate = data.Items.find(order => order.firstName === newOrder.firstName && order.lastName === newOrder.lastName)
+      if (orderToUpdate) {
+        var params = {
+          TableName: tableName,
+          Key: { email: orderToUpdate.email },
+          UpdateExpression: 'set #a = :t, #b = :b, #r = :r, #i = :i',
+          ExpressionAttributeNames: { '#a' : 'isArrived', '#b' : 'orderNumber', '#r' : 'restaurant', '#i' : 'deliveryTime' },
+          ExpressionAttributeValues: { ":t": false, ':b': newOrder.orderNumber, ':r': newOrder.restaurant, ':i': getTime(newOrder.deliveryTime) }
+        }
+      
+        client.update(params, async (err, data) => {
+          if (err) {
+            console.error(err)
+            console.error("Error JSON:", JSON.stringify(err, null, 2))
+            res.send(err)
+          }
+          else {
+            console.log(data)
+            res.send("Successfully updated")
+          }
+        })
+      }
+    });
+  }
+})
+})
+
+app.get('/orders',(req, res, next) => {
+  var params = {
+      TableName: tableName
+  }
+
+  client.scan(params, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.send(err)
+    } 
+    else {
+      console.log(data.Items.filter(order => order.isArrived === false))
+      res.send(data.Items.filter(order => order.isArrived === false))
+    }
+  })
+})
+
+app.get('/ordernumbers',(req, res, next) => {
+  var params = {
+    TableName: tableName,
+    ProjectionExpression: 'orderNumber'
+  }
+
+  client.scan(params, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.send(err)
+    } 
+    else {
+      console.log(data)
+      res.send(data)
+    }
+  })
+})
+
+app.put('/order/:email', (req, res, next) => { // is Arrived
+  var params = {
+    TableName: tableName,
+    Key: { email: req.params.email },
+    UpdateExpression: 'set #a = :t',
+    ExpressionAttributeNames: { '#a' : 'isArrived' },
+    ExpressionAttributeValues: { ":t": true },
+    ReturnValues: "ALL_NEW"
+  }
+
+  client.update(params, async (err, data) => {
+    if (err) {
+      console.error(err)
+      console.error("Error JSON:", JSON.stringify(err, null, 2))
+      res.send(err)
+    }
+    else {
+      console.log(data)
+      const channelId = data.Attributes.slackID
+      try {
+        const result = await bot.chat.postMessage({
+          channel: channelId,
+          text: "Food has arrived, come to eat :knife_fork_plate:"
+        });
+
+        console.log(result);
+      }
+      catch (error) {
+        console.error(error);
+      }
+      res.send("Successfully")
+    }
+  })
+})
+
+app.post('/user', (req, res, next) => {
   console.log(req)
   var body = req.body
   var params = {
     TableName: tableName,
-    Item: {
-      ...body
-      // creates a new uuid
-      // name property passed from body
-      // "firstName": body["firstName"],
-      // "lastName": body["lastName"]
-    }
+    Item: { ...body }
   }
 
   client.put(params, (err, data) => {
@@ -37,81 +153,25 @@ app.post('/orders/new', (req,res) => {
     }
     else {
       console.log("Added item:", JSON.stringify(data, null, 2))
-      res.send("very successfully")
+      res.send("Successfully added")
     }
   })
 })
 
-app.get('/orders',(req, res) => {
+app.get('/users',(req, res, next) => {
   var params = {
-      TableName: tableName
+    TableName: tableName
+}
+
+client.scan(params, (err, data) => {
+  if (err) {
+    console.log(err)
+    res.send(err)
+  } 
+  else {
+    res.send(data.Items)
   }
-
-  client.scan(params, (err, data) => {
-    if (err) {
-      console.log(err)
-      res.send('Failed to get orders')
-    } 
-    else {
-      console.log(data.Items.filter(order => order.isArrived === false))
-      res.send(data.Items.filter(order => order.isArrived === false))
-    }
   })
-})
-
-app.get('/ordernumbers',(req, res) => {
-  var params = {
-    TableName: tableName,
-    ProjectionExpression: 'orderNumber'
-  }
-
-  client.scan(params, (err, data) => {
-    if (err) {
-      console.log(err)
-    } 
-    else {
-      console.log(data)
-      res.send(data)
-    }
-  })
-})
-
-app.put('/order/:email', (req, res) => { // is Arrived
-  var params = {
-    TableName: tableName,
-    Key: { email: req.params.email },
-    UpdateExpression: 'set #a = :t',
-    ExpressionAttributeNames: { '#a' : 'isArrived' },
-    ExpressionAttributeValues: { ":t": true }
-  }
-
-  client.update(params, async (err, data) => {
-    if (err) {
-      console.error("Unable to add item.")
-      console.error("Error JSON:", JSON.stringify(err, null, 2))
-      res.send("oh oh oh oh ")
-    }
-    else {
-      const channelId = "U03GMTM2XQU" // TODO get this id from DB with email
-      try {
-        // Call the chat.postMessage method using the WebClient
-        const result = await bot.chat.postMessage({
-          channel: channelId,
-          text: "Hello maor"
-        });
-
-        console.log(result);
-      }
-      catch (error) {
-        console.error(error);
-      }
-      res.send("very successfully")
-    }
-  })
-})
-
-app.post('/user', (req, res) => {
-  
 })
 
 
