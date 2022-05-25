@@ -6,7 +6,7 @@ const TopBar = () =>  (
   <AppBar position="fixed">
     <Toolbar>
       <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-        SWI Cibus orders
+        הזמנות פעילות
       </Typography>
     </Toolbar>
   </AppBar>

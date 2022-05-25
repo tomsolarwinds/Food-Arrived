@@ -11,25 +11,25 @@ const style = {
   bgcolor: 'background.paper',
 };
 
+const FIVE_MINUTES = 5 * 60 * 1000;
+
 const OrdersList = () =>  {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const api = useApi();
+  const onRemoveOrder = (email) => setData(data.filter(item => item?.email !== email))
 
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const response = await api.get('https://randomuser.me/api/?results=10.', {
-        params: {
-        },
-      });
-      setData(response?.data?.results);
+      const response = await api.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders', {});
+      setData(response?.data);
       setLoading(false);
     };
     fetch();
-    const intervalId = setInterval(() => {  //assign interval to a variable to clear it.
+    const intervalId = setInterval(() => {
       fetch();
-    }, 50000);
+    }, FIVE_MINUTES);
     return () => clearInterval(intervalId);
   }, [api]);
 
@@ -38,10 +38,14 @@ const OrdersList = () =>  {
       <CircularProgress />
     </Box>
   );
-
+  if (!data || !data?.length) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px' }}>
+      <>אין הזמנות פעילות</>
+    </Box>
+  )
   return (
     <List style={style}>
-      {data?.map((item) => <OrderItem key={item?.email} item={item} />)}
+      {data?.map((item) => <OrderItem key={item?.email} item={item} onRemoveOrder={onRemoveOrder} />)}
     </List>
   );
 }
