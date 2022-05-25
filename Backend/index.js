@@ -24,6 +24,7 @@ app.use(function(req, res, next) {
 
 const getTime = (arrivalTime) => {
   const time = arrivalTime.split(':');
+  console.log('Time:', new Date(null, null, null,parseInt (time[0] || 0), parseInt(time[1] || 0)))
   return new Date(null, null, null,parseInt (time[0] || 0), parseInt(time[1] || 0))
 }
 
@@ -130,7 +131,9 @@ app.put('/order/:email', (req, res, next) => { // is Arrived
         console.log(result);
       }
       catch (error) {
-        console.error(error);
+        console.log('IN /order/:email', error)
+        res.status(400)
+        res.send(error)
       }
       res.send("Successfully")
     }
@@ -147,12 +150,12 @@ app.post('/user', (req, res, next) => {
 
   client.put(params, (err, data) => {
     if (err) {
-      console.error("Unable to add item.")
-      console.error("Error JSON:", JSON.stringify(err, null, 2))
-      res.send("oh oh oh oh ")
+      console.log('IN /user', err)
+      res.status(400)
+      res.send(err)
     }
     else {
-      console.log("Added item:", JSON.stringify(data, null, 2))
+      console.log('IN /user', 'Successfully')
       res.send("Successfully added")
     }
   })
@@ -165,12 +168,48 @@ app.get('/users',(req, res, next) => {
 
 client.scan(params, (err, data) => {
   if (err) {
-    console.log(err)
+    console.log('IN /users', err)
     res.send(err)
   } 
   else {
+    console.log('IN /users', 'Successfully')
     res.send(data.Items)
   }
+  })
+})
+
+
+app.put('/setArrived', (req, res, next) => {
+  var params = {
+    TableName: tableName
+  }
+
+  client.scan(params, (err, data) => {
+    if (err) {
+      console.log('Error', err)
+      res.send(err)
+    }
+    else {
+      data.Items.forEach(order => {
+        var params = {
+          TableName: tableName,
+          Key: { email: order.email },
+          UpdateExpression: 'set #a = :t',
+          ExpressionAttributeNames: { '#a' : 'isArrived' },
+          ExpressionAttributeValues: { ":t": false }
+        }
+      
+        client.update(params, (err, data) => {
+          if (err) {
+            console.error(err)
+            console.error("Error JSON:", JSON.stringify(err, null, 2))
+          }
+          else {
+            console.log(data)
+          }
+        })
+      });
+    }
   })
 })
 
