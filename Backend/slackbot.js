@@ -42,7 +42,7 @@ bot.message('רישום', async ({ message, say }) => {
   firstName = text_array[0]
   lastName = text_array[1]
   const respone = await axios.post(
-     'http://ec2-18-192-198-183.eu-central-1.compute.amazonaws.com:3000/user', {email, firstName, lastName, imgUrl: image_512, slackID: user_id})
+     'http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/user', {email, firstName, lastName, imgUrl: image_512, slackID: user_id})
   if(respone.status === 200)
     await say(`.הרישום בוצע. תודה.`);
   else  await say('קרתה תקלה, הרישום לא נשמר :(')
