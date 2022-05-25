@@ -18,7 +18,6 @@ const OrdersList = () =>  {
   const [data, setData] = useState(null);
   const api = useApi();
   const onRemoveOrder = (email) => setData(data.filter(item => item?.email !== email))
-  const setAllToFalse = async () => api.put('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/setArrived', {});
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -46,7 +45,6 @@ const OrdersList = () =>  {
   if (!data || !data?.length) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px' }}>
       <>אין הזמנות פעילות</>
-      <button onClick={setAllToFalse}>אפס הזמנות</button>
     </Box>
   )
   return (
