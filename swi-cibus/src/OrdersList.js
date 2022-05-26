@@ -22,7 +22,7 @@ const OrdersList = () =>  {
     const fetch = async () => {
       try {
         setLoading(true);
-        const response = await api.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders', {});
+        const response = await api.get('https://uywgx1vyya.execute-api.eu-central-1.amazonaws.com/orders', {});
         setData(response?.data);
         setLoading(false);
       } catch {
