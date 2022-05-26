@@ -11,11 +11,11 @@ async function fetchActiveOrders(){
     const newOrders = result.filter(r => !ordersNumbers.includes(r.orderNumber));
     //post new orders to api
     console.log('start response');
-    const postResponse = await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
+    if(newOrders.length > 0) {
+        await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
 
-    console.log(postResponse.status);
-    console.log({newOrders});
-
+        console.log({newOrders});
+    }
 }
 
 async function scrapeOrdersFromCibus(){
