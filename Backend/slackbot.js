@@ -2,8 +2,6 @@ require('dotenv').config()
 const axios = require('axios')
 
 const { App } = require("@slack/bolt");
-const { ConsoleLogger } = require('@slack/logger');
-const { getLogger } = require('@slack/web-api/dist/logger');
 
 const bot = new App({
     token: process.env.OAUTH_TOKEN, //Find in the Oauth  & Permissions tab
@@ -34,16 +32,16 @@ bot.message(':wave:', async ({ message, say }) => {
 });
 
 bot.message('רישום', async ({ message, say }) => {
-  user_id = message['user']
-  message_text = message['text']
-  const {user: {name, profile:{image_512}}} = await bot.client.users.info({user: user_id})
-  email = name.concat('@solarwinds.com')
-  const text_array = message_text.trim().split(/\s+/)
-  firstName = text_array[0]
-  lastName = text_array[1]
-  const respone = await axios.post(
-     'http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/user', {email, firstName, lastName, imgUrl: image_512, slackID: user_id})
-  if(respone.status === 200)
+  const slackID = message['user']
+  const text = message['text']
+  const {user: {name, profile:{image_512:imgUrl}}} = await bot.client.users.info({user: user_id})
+  const email = name.concat('@solarwinds.com')
+  const text_array = text.trim().split(/\s+/).filter(m => m.trim() && m !==  'רישום')
+  const firstName = text_array[0]
+  const lastName = text_array.slice(1).join(' ')
+  const response = await axios.post(
+     'http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/user', {email, firstName, lastName, imgUrl, slackID})
+  if(response.status === 200)
     await say(`.הרישום בוצע. תודה.`);
   else  await say('קרתה תקלה, הרישום לא נשמר :(')
 });
