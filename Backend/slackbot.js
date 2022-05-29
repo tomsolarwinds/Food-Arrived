@@ -45,7 +45,7 @@ bot.message('רישום', async ({ message, say }) => {
   const text = message['text']
   const {user: {name, profile:{image_512:imgUrl}}} = await bot.client.users.info({user: slackID})
   const allUsers = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/users');
-  const isUserExist = allUsers?.data.some(u => u.slackID === slackID);
+  const isUserExist = allUsers.data.some(u => u.slackID === slackID);
   if(isUserExist){
     await say('הינך רשום למערכת. לעדכון פרטים אנא רשום את הפרטים החדשים ולבסוף עדכון ')
     await say('למשל: ישראל ישראלי עדכון')
