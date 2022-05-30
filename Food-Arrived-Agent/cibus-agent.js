@@ -5,16 +5,22 @@ async function fetchActiveOrders(){
     //fetch all orders from api
     const response = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/ordernumbers');
     const ordersNumbers = response.data.Items.map(i => i.orderNumber);
-    console.log(ordersNumbers);
+    console.timeLog(ordersNumbers);
     // scraping all orders from cibus
     const result = await scrapeOrdersFromCibus();
     const newOrders = result.filter(r => !ordersNumbers.includes(r.orderNumber));
     //post new orders to api
-    console.log('start response');
     if(newOrders.length > 0) {
-        await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
+        await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.timeLog(err.message));
 
-        console.log({newOrders});
+        console.timeLog({newOrders});
+    } else {
+        console.timeLog('no new orders');
+        const activeOrdersResponse = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders').catch(err => console.timeLog(err.message));
+        if(activeOrdersResponse.status === 200 && activeOrdersResponse.data && activeOrdersResponse.data.length > 0){
+            console.timeLog('going to setArrived for all active orders');
+           await axios.put('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/setArrived').catch(err => console.timeLog(err.message));
+        }
     }
 }
 
