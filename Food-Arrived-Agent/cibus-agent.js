@@ -11,7 +11,6 @@ async function fetchActiveOrders(){
     const result = await scrapeOrdersFromCibus();
     const newOrders = result.filter(r => !ordersNumbers.includes(r.orderNumber));
     //post new orders to api
-    console.log('start response');
     if(newOrders.length > 0) {
         await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
 
