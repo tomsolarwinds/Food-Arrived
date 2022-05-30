@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 const axios = require('axios');
+require('log-timestamp');
 
 async function fetchActiveOrders(){
     //fetch all orders from api
@@ -15,6 +16,13 @@ async function fetchActiveOrders(){
         await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
 
         console.log({newOrders});
+    } else {
+        console.log('no new orders');
+        const activeOrdersResponse = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders').catch(err => console.log(err.message));
+        if(activeOrdersResponse.status === 200 && activeOrdersResponse.data && activeOrdersResponse.data.length > 0){
+            console.log('going to setArrived for all active orders');
+           await axios.put('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/setArrived').catch(err => console.log(err.message));
+        }
     }
 }
 
