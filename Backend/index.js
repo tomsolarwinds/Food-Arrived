@@ -79,8 +79,8 @@ app.get('/orders',(req, res, next) => {
       res.send(err)
     } 
     else {
-      console.log(data.Items.filter(order => order.isArrived === false))
-      res.send(data.Items.filter(order => order.isArrived === false))
+      console.log(data.Items.filter(order => order.orderNumber && order.isArrived === false))
+      res.send(data.Items.filter(order => order.orderNumber && order.isArrived === false))
     }
   })
 })
@@ -194,9 +194,9 @@ app.put('/setArrived', (req, res, next) => {
         var params = {
           TableName: tableName,
           Key: { email: order.email },
-          UpdateExpression: 'set #a = :t',
-          ExpressionAttributeNames: { '#a' : 'isArrived' },
-          ExpressionAttributeValues: { ":t": false }
+          UpdateExpression: 'set #a = :t, #b = :b, #r = :r, #i = :i',
+          ExpressionAttributeNames: { '#a' : 'isArrived', '#b' : 'orderNumber', '#r' : 'restaurant', '#i' : 'deliveryTime'},
+          ExpressionAttributeValues: { ":t": false, ":b": null, ":r": null, ":i": null }
         }
       
         client.update(params, (err, data) => {
