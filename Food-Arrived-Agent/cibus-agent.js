@@ -32,15 +32,17 @@ async function scrapeOrdersFromCibus(){
     await page.type('#txtUsr', process.env.CIBUS_USER);
     await page.type('#txtPas', process.env.CIBUS_PASSWORD);
     await page.type('#txtCmp', process.env.CIBUS_COMPANY);
+    let failure = false;
     await Promise.all([
         page.click('#btnLogin'),
         page.waitForNavigation({ waitUntil: 'networkidle0' }),
-    ]);
+    ]).catch(err => {console.error(err.message); failure=true;});
     await Promise.all([
         page.goto('https://www.mysodexo.co.il/new_admin/new_food_is_here.aspx'),
         page.waitForNavigation({ waitUntil: 'networkidle0' })
-    ])
+    ]).catch(err => {console.error(err.message); failure=true})
 
+    if(failure) return;
 
     const result = await page.evaluate(() => {
         const data = [];
