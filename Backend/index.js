@@ -22,15 +22,9 @@ app.use(function(req, res, next) {
   next();
 });
 
-const getTime = (arrivalTime) => {
-  const time = arrivalTime.split(':');
-  console.log('Time:', new Date(null, null, null,parseInt (time[0] || 0), parseInt(time[1] || 0)))
-  return new Date(null, null, null,parseInt (time[0] || 0), parseInt(time[1] || 0))
-}
-
-app.post('/orders/new', (req,res, next) => {
-  var newOrders = req.body
-  var params = {
+app.post('/orders/new', (req,res) => {
+  let newOrders = req.body
+  let params = {
     TableName: tableName
   }
 
@@ -48,7 +42,7 @@ client.scan(params, (err, data) => {
           Key: { email: orderToUpdate.email },
           UpdateExpression: 'set #a = :t, #b = :b, #r = :r, #i = :i',
           ExpressionAttributeNames: { '#a' : 'isArrived', '#b' : 'orderNumber', '#r' : 'restaurant', '#i' : 'deliveryTime' },
-          ExpressionAttributeValues: { ":t": false, ':b': newOrder.orderNumber, ':r': newOrder.restaurant, ':i': getTime(newOrder.deliveryTime) }
+          ExpressionAttributeValues: { ":t": false, ':b': newOrder.orderNumber, ':r': newOrder.restaurant, ':i': newOrder.deliveryTime }
         }
       
         client.update(params, async (err, data) => {
@@ -68,7 +62,7 @@ client.scan(params, (err, data) => {
 })
 })
 
-app.get('/orders',(req, res, next) => {
+app.get('/orders',(req, res) => {
   var params = {
       TableName: tableName
   }
@@ -85,7 +79,7 @@ app.get('/orders',(req, res, next) => {
   })
 })
 
-app.get('/ordernumbers',(req, res, next) => {
+app.get('/ordernumbers',(req, res) => {
   var params = {
     TableName: tableName,
     ProjectionExpression: 'orderNumber'
@@ -103,7 +97,7 @@ app.get('/ordernumbers',(req, res, next) => {
   })
 })
 
-app.put('/order/:email', (req, res, next) => { // is Arrived
+app.put('/order/:email', (req, res) => { // is Arrived
   var params = {
     TableName: tableName,
     Key: { email: req.params.email },
@@ -140,7 +134,7 @@ app.put('/order/:email', (req, res, next) => { // is Arrived
   })
 })
 
-app.post('/user', (req, res, next) => {
+app.post('/user', (req, res) => {
   console.log(req)
   var body = req.body
   var params = {
@@ -161,7 +155,7 @@ app.post('/user', (req, res, next) => {
   })
 })
 
-app.get('/users',(req, res, next) => {
+app.get('/users',(req, res) => {
   var params = {
     TableName: tableName
 }
@@ -179,7 +173,7 @@ client.scan(params, (err, data) => {
 })
 
 
-app.put('/setArrived', (req, res, next) => {
+app.put('/setArrived', (req, res) => {
   var params = {
     TableName: tableName
   }

@@ -3,6 +3,7 @@ const axios = require('axios');
 require('log-timestamp');
 
 async function fetchActiveOrders(){
+    // console.log(date.toLocaleTimeString());
     //fetch all orders from api
     const response = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/ordernumbers');
     const ordersNumbers = response.data.Items.map(i => i.orderNumber);
@@ -10,12 +11,13 @@ async function fetchActiveOrders(){
     // scraping all orders from cibus
     const result = await scrapeOrdersFromCibus();
     const newOrders = result.filter(r => !ordersNumbers.includes(r.orderNumber));
+
     //post new orders to api
     if(newOrders.length > 0) {
         await axios.post('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders/new',newOrders ).catch(err => console.log(err.message));
 
         console.log({newOrders});
-    } else {
+    } else if(result.length === 0) {
         console.log('no new orders');
         const activeOrdersResponse = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders').catch(err => console.log(err.message));
         if(activeOrdersResponse.status === 200 && activeOrdersResponse.data && activeOrdersResponse.data.length > 0){
@@ -71,7 +73,7 @@ async function scrapeOrdersFromCibus(){
                 const columns = row.querySelectorAll('td');
                 const c = Array.from(columns, column => column.innerText);
                 restaurant = c[0];
-                deliveryTime = c[1];
+                deliveryTime = getDateFromDeliveryTime(c[1]);
             }
         });
 
@@ -82,9 +84,35 @@ async function scrapeOrdersFromCibus(){
     return result;
 }
 
+function getDateFromDeliveryTime(deliveryTime){
+    const timeSplited = deliveryTime.trim().split(':');
+    const date = new Date();
+    date.setHours(Number(timeSplited[0]));
+    date.setMinutes(Number(timeSplited[1]));
+    date.setSeconds(0);
+
+    return date;
+}
+
+async function delayedOrders(){
+    const activeOrders = await axios.get('http://ec2-18-192-191-34.eu-central-1.compute.amazonaws.com:3000/orders')
+    if(activeOrders && activeOrders.data.length > 0){
+        const delayedOrders = []
+        const currentDate = new Date();
+        activeOrders.data.forEach(o => {
+           if(o.deliveryTime > currentDate){
+               delayedOrders.push(o);
+               console.log('order delayed', o);
+           }
+        });
+        console.log('delayed orders list:', delayedOrders);
+    }
+}
+
 async function startCibusAgent() {
     await fetchActiveOrders();
     setInterval(fetchActiveOrders, process.env.CIBUS_FETCH_INTERVAL_MS);
+    setInterval(delayedOrders, process.env.CIBUS_FETCH_INTERVAL_MS);
 }
 
 module.exports = {
