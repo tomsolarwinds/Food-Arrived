@@ -32,16 +32,6 @@ async function fetchActiveOrders(){
 }
 
 async function scrapeOrdersFromCibus(){
-    // function getDateFromDeliveryTime(deliveryTime){
-    //     const timeSplited = deliveryTime.trim().split(':');
-    //     const date = new Date();
-    //     date.setHours(Number(timeSplited[0]));
-    //     date.setMinutes(Number(timeSplited[1]));
-    //     date.setSeconds(0);
-    //
-    //     return date;
-    // }
-
     const browser = await puppeteer.launch({headless: true});
     const page = await browser.newPage();
     await page.goto('https://www.mysodexo.co.il/');
